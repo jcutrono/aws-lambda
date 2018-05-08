@@ -1,0 +1,11 @@
+aws dynamodb create-table --table-name users \
+  --attribute-definitions AttributeName=id,AttributeType=S AttributeName=active,AttributeType=S\
+  --key-schema AttributeName=id,KeyType=HASH AttributeName=active,KeyType=RANGE\
+  --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+  
+aws dynamodb create-table --table-name messages \
+  --attribute-definitions AttributeName=id,AttributeType=S AttributeName=recipients,AttributeType=S\
+  --key-schema AttributeName=id,KeyType=HASH AttributeName=recipients,KeyType=RANGE\
+  --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5
+  
+aws dynamodb put-item --table-name users --item file://users.json --return-consumed-capacity TOTAL

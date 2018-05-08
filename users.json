@@ -1,0 +1,6 @@
+{
+	"id": {"S": "1"},
+	"active": {"S": "1"},
+	"username": {"S": "josephc"},
+	"phonenumber": {"S": "8137321885"}
+}
