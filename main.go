@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/google/uuid"
 )
 
 type NewUser struct {
@@ -23,13 +24,23 @@ func Handler(ctx context.Context, user NewUser) (string, error) {
 		Region: aws.String("us-west-2")},
 	)
 	svc := dynamodb.New(sess)
+
+	user.Id = uuid.New().String()
+	user.Active = "1"
+
 	av, _ := dynamodbattribute.MarshalMap(user)
 
 	input := &dynamodb.PutItemInput{
 		Item:      av,
 		TableName: aws.String("users"),
 	}
-	svc.PutItem(input)
+
+	_, err := svc.PutItem(input)
+
+	if err != nil {
+		fmt.Println("Got error calling PutItem:")
+		fmt.Println(err.Error())
+	}
 
 	return fmt.Sprintf("Welcome %s!", user.Username), nil
 

@@ -3,30 +3,31 @@
 const AWS = require("aws-sdk");
 const doc = require('dynamodb-doc');
 const dynamo = new doc.DynamoDB();
+const uuidv4 = require('uuid/v4');
 const sns = new AWS.SNS();
 AWS.config.update({region: "us-west-2"});
 
 exports.handler = (event, context, callback) => {
     
     let userFilter = {};
-    var exp = event.users.map((user, index) => {
+    event.users.map((user, index) => {
         userFilter[':user'+index] = user;
     });
 
-    var params = {
+    let findUsers = {
         TableName : 'users',        
         FilterExpression : 'username IN (' + Object.keys(userFilter).toString() + ')',
         ExpressionAttributeValues : userFilter
     };
 
-    dynamo.scan(params, function (err, data) {
+    dynamo.scan(findUsers, function (err, data) {
         if(err){
-            console.log(err);
+            console.log('Error looking for users: ' + err);
         }
         else{
             data.Items.forEach(user => {
-                var sms = {
-                    Message: 'YO',
+                let sms = {
+                    Message: event.from + ': YO',
                     MessageStructure: 'string',
                     PhoneNumber: '+1' + user.phonenumber
                 };
@@ -39,6 +40,23 @@ exports.handler = (event, context, callback) => {
                     }
                 });
             });
+        }
+    });
+
+    let logMessage = {
+        TableName:'messages',
+        Item:{
+            'id': uuidv4(),
+            'sender': event.from,
+            'recipients': event.users
+        }
+    };
+
+    dynamo.putItem(logMessage, function(err, data) {
+        if (err) {
+            console.error('Error logging: ', JSON.stringify(err));
+        } else {
+            console.log('Added: ', JSON.stringify(data));
         }
     });
 }
