@@ -9,6 +9,11 @@ AWS.config.update({region: "us-west-2"});
 
 exports.handler = (event, context, callback) => {
     
+    if(event.serialNumber === 'G030JF056273FG6A'){
+        event.users = ["josephc"];
+        event.from = "IOT Button";
+    }
+    
     let userFilter = {};
     event.users.map((user, index) => {
         userFilter[':user'+index] = user;
